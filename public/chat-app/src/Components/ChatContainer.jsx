@@ -16,6 +16,8 @@ const ChatContainer = ({currentChat,currentUser,socket} ) => {
             from: currentUser._id,
             to: currentChat._id,
             message: msg, 
+        },{
+            withCredentials:true
         });
         socket.current.emit("send-msg",{
             to:currentChat._id,
@@ -51,7 +53,8 @@ const ChatContainer = ({currentChat,currentUser,socket} ) => {
             const response = await axios.post(getAllMessageRoute,{
                 from: currentUser._id,
                 to: currentChat._id
-            });
+            },
+        {withCredentials:true});
             setMessages(response.data); 
         }
         fun();

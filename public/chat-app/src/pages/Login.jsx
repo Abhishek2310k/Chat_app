@@ -4,7 +4,6 @@ import {Link,useNavigate} from 'react-router-dom'
 import logo from '../assets/logo.svg'
 import axios from 'axios'
 import { loginRoute } from '../utils/APIRoutes'
-// import {ToastContainer,toast} from 'react-toastify'
 function Login() {
     const navigate = useNavigate();
     const [values,setValues] = useState({
@@ -18,17 +17,52 @@ function Login() {
         }
     },[])
 
-    const handleSubmit = async (event) =>{
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        if (handleValidation()){
-            const {password,username} = values;
-            const {data} = await axios.post(loginRoute,{
-                username,
-                password,
-            });
-            if(data.status === false) alert(data.msg);
-            if(data.status === true) localStorage.setItem("chat-app-user", JSON.stringify(data.user));
-            navigate("/");
+        
+        if (handleValidation()) {
+            const { password, username } = values;
+            
+            try {
+                const resp = await axios.post(
+                    loginRoute, 
+                    {
+                        username,
+                        password,
+                    },
+                    {
+                        withCredentials: true,
+                    }
+                );
+                
+                console.log(resp);
+
+                const {data} = resp;
+    
+                if (data.status === false) {
+                    alert(data.msg);
+                }
+    
+                if (data.status === true) {
+                    // Save user data in localStorage
+                    localStorage.setItem("chat-app-user", JSON.stringify(data.user));
+    
+                    // Log the logged_id cookie
+                    console.log("Logged ID cookie:", document.cookie);
+    
+                    // Optionally, you can parse document.cookie if needed to get the value of 'logged_id'
+                    const cookies = document.cookie.split(';');
+                    const loggedInCookie = cookies.find(cookie => cookie.trim().startsWith('logged_in'));
+                    if (loggedInCookie) {
+                        console.log('Logged-in Cookie:', loggedInCookie.split('=')[1]);
+                    }
+                }
+    
+                // Navigate to the home page
+                navigate("/");
+            } catch (error) {
+                console.error('Login error:', error);
+            }
         }
     };
 
@@ -54,7 +88,7 @@ function Login() {
         <form onSubmit={(event)=>handleSubmit(event)}>
             <div className='brand'>
                 <img src={logo} alt='logo'/>
-                <h1>Snappy</h1>
+                <h1>Chat App</h1>
             </div>
             <input type='text' placeholder='Username' name='username' onChange={(e)=>handleChange(e)} min="3"/>
             <input type='password' placeholder='Password' name='password' onChange={(e)=>handleChange(e)}/>

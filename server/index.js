@@ -1,49 +1,65 @@
-const express = require("express");
-const cors = require('cors');
-const mongoose = require('mongoose');
-const userRoutes = require("./routes/userRoutes");
-const messageRoutes = require("./routes/messagesRoute");
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import userRoutes from './routes/userRoutes.js';
+import messageRoutes from './routes/messagesRoute.js';
+import { Server } from 'socket.io';
+import { config } from 'dotenv';
+import cookieParser from 'cookie-parser';
+
+config();
+
 const app = express();
-const socket = require("socket.io"); 
-require('dotenv').config();
 
 app.use(express.json());
-app.use(cors());
-app.use("/api/auth",userRoutes);
-app.use("/api/messages",messageRoutes);
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+// we have already parsed the request
+app.use(cookieParser());
 
-mongoose.connect(process.env.MONGO_URL,{
-    useNewUrlParser:true,
-    useUnifiedTopology:true,
-}).then(()=>{
-    console.log("DB connection made")
-}).catch((err)=>{
-    console.log(err.message); 
+
+app.get('/',(req,res)=>{return res.json({message:"hello world"})})
+app.use("/api/auth", userRoutes);
+app.use("/api/messages", messageRoutes);
+
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => {
+    console.log("DB connection made");
+  })
+  .catch((err) => {
+    console.error(err.message);
+  });
+
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
+  console.log(`Process started on port ${PORT}`);
 });
 
+const io = new Server(server, {
+  cors: {
+    origin: '*',  
+    credentials: true,
+  },
+});
 
-const server = app.listen(process.env.PORT,()=>{
-    console.log(`process started on port ${process.env.PORT}`);
-})
+global.onlineUsers = new Map();
 
-const io = socket(server, {
-    cors: {
-      origin: "http://localhost:3000",
-      credentials: true,
-    },
+io.on("connection", (socket) => {
+  global.chatSocket = socket;
+
+  socket.on("add-user", (userId) => {
+    global.onlineUsers.set(userId, socket.id);
   });
-  
-  global.onlineUsers = new Map();
-  io.on("connection", (socket) => {
-    global.chatSocket = socket;
-    socket.on("add-user", (userId) => {
-      onlineUsers.set(userId, socket.id);
-    });
-  
-    socket.on("send-msg", (data) => {
-      const sendUserSocket = onlineUsers.get(data.to);
-      if (sendUserSocket) {
-        socket.to(sendUserSocket).emit("msg-recieve", data.message);
-      }
-    });
+
+  socket.on("send-msg", (data) => {
+    const sendUserSocket = global.onlineUsers.get(data.to);
+    if (sendUserSocket) {
+      socket.to(sendUserSocket).emit("msg-recieve", data.message);
+    }
   });
+});

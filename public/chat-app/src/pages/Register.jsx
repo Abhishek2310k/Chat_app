@@ -29,6 +29,7 @@ function Register() {
                 email,
                 password,
             });
+            console.log(data);
             if(data.status === false) alert(data.msg);
             if(data.status === true) localStorage.setItem("chat-app-user", JSON.stringify(data.user));
             navigate("/");

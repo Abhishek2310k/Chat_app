@@ -46,7 +46,7 @@ const SetAvatar = () => {
             try {
                 const fetchedAvatars = [];
                 for (let i = 0; i < 4; i++) {
-                    const response = await axios.get(`${api}/${Math.round(Math.random() * 1000)}`);
+                    const response = await axios.get(`${api}/${Math.round(Math.random() * 1000)}`,{withCredentials:true});
                     const buffer = Buffer.from(response.data, "binary").toString("base64");
                     fetchedAvatars.push(buffer);
                 }

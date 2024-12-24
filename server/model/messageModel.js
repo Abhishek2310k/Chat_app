@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const MessageSchema = mongoose.Schema(
+const MessageSchema = new mongoose.Schema(
   {
     message: {
       text: { type: String, required: true },
     },
-    users: Array,
+    users: [mongoose.Schema.Types.ObjectId],  // Optionally specify types for better validation
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -17,4 +17,4 @@ const MessageSchema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Messages", MessageSchema);
+export default mongoose.model("Messages", MessageSchema);

@@ -1,8 +1,10 @@
-const { getAllMessage,addMessage } = require('../controllers/messagesController');
+import { getAllMessage, addMessage } from "../controllers/messagesController.js";
+import express from "express";
+import { tokenVerification } from "../middleware/token.js";
 
-const router = require("express").Router(); 
+const router = express.Router();
 
-router.post("/addmsg/",addMessage);
-router.post("/getmsg/",getAllMessage);
+router.post("/addmsg/", tokenVerification, addMessage);
+router.post("/getmsg/", tokenVerification, getAllMessage);
 
-module.exports = router;
+export default router;
