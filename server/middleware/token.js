@@ -15,6 +15,6 @@ export function tokenVerification (req,res,next) {
 
     } catch (err) {
         return res.status(500).json({error:true,
-            message:"something wrong during token verificatin"});
+            message:"omething wrong during token verificatin"});
     }
 }
